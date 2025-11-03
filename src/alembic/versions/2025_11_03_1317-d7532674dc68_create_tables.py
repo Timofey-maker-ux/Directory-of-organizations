@@ -1,8 +1,8 @@
 """create tables
 
-Revision ID: 261012e54089
+Revision ID: d7532674dc68
 Revises: a221637d4bdb
-Create Date: 2025-11-02 18:26:02.588485
+Create Date: 2025-11-03 13:17:43.755717
 
 """
 
@@ -10,21 +10,17 @@ from typing import Sequence, Union
 
 from alembic import op
 import sqlalchemy as sa
-from sqlalchemy.dialects import postgresql
 from geoalchemy2 import Geometry
-
+from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision: str = "261012e54089"
+revision: str = "d7532674dc68"
 down_revision: Union[str, Sequence[str], None] = "a221637d4bdb"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
-    # ----------------------------
-    # Table: activities
-    # ----------------------------
     op.create_table(
         "activities",
         sa.Column("id", sa.Integer, primary_key=True),
@@ -36,15 +32,12 @@ def upgrade() -> None:
             nullable=True,
         ),
         sa.Column("depth", sa.Integer, nullable=False, server_default="1"),
-        sa.Column("path", sa.String(200), nullable=False, index=True),
+        sa.Column("path", sa.String(500), nullable=False),
         sa.CheckConstraint(
             "depth >= 1 AND depth <= 3", name="chk_activity_depth"
         ),
     )
 
-    # ----------------------------
-    # Table: buildings
-    # ----------------------------
     op.create_table(
         "buildings",
         sa.Column("id", sa.Integer, primary_key=True),
@@ -62,9 +55,6 @@ def upgrade() -> None:
         ),
     )
 
-    # ----------------------------
-    # Table: organizations
-    # ----------------------------
     op.create_table(
         "organizations",
         sa.Column("id", sa.Integer, primary_key=True),
@@ -77,11 +67,7 @@ def upgrade() -> None:
             nullable=False,
         ),
     )
-    op.create_index("ix_organizations_name", "organizations", ["name"])
 
-    # ----------------------------
-    # Table: organization_activities (M2M)
-    # ----------------------------
     op.create_table(
         "organization_activities",
         sa.Column(
@@ -101,8 +87,6 @@ def upgrade() -> None:
 
 def downgrade() -> None:
     op.drop_table("organization_activities")
-    op.drop_index("ix_organizations_name", table_name="organizations")
     op.drop_table("organizations")
     op.drop_table("buildings")
-    op.drop_index("ix_activities_path", table_name="activities")
     op.drop_table("activities")

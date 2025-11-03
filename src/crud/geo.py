@@ -2,8 +2,8 @@ from typing import List
 from sqlalchemy import select, func, text
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
-from src.organizations.models import Organization
-from src.buildings.models import Building
+from src.models.organization import Organization
+from src.models.building import Building
 
 
 async def organizations_within_radius(

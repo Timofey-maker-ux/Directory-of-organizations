@@ -21,9 +21,7 @@ class Activity(Base):
         nullable=True,
     )
     depth = Column(Integer, nullable=False, default=1)
-    path = Column(
-        String(200), nullable=False, index=True
-    )
+    path = Column(String(500), nullable=False)
 
     parent = relationship("Activity", remote_side=[id], backref="children")
 
