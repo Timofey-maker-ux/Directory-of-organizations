@@ -1,8 +1,8 @@
-"""create tables
+"""init tables
 
-Revision ID: d7532674dc68
-Revises: a221637d4bdb
-Create Date: 2025-11-03 13:17:43.755717
+Revision ID: 2b76071598c0
+Revises:
+Create Date: 2025-11-04 17:17:35.304442
 
 """
 
@@ -11,11 +11,10 @@ from typing import Sequence, Union
 from alembic import op
 import sqlalchemy as sa
 from geoalchemy2 import Geometry
-from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision: str = "d7532674dc68"
-down_revision: Union[str, Sequence[str], None] = "a221637d4bdb"
+revision: str = "2b76071598c0"
+down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
@@ -24,17 +23,15 @@ def upgrade() -> None:
     op.create_table(
         "activities",
         sa.Column("id", sa.Integer, primary_key=True),
-        sa.Column("name", sa.String(200), nullable=False),
+        sa.Column("name", sa.String(100), nullable=False),
         sa.Column(
             "parent_id",
             sa.Integer,
-            sa.ForeignKey("activities.id", ondelete="SET NULL"),
+            sa.ForeignKey("activities.id", ondelete="CASCADE"),
             nullable=True,
         ),
-        sa.Column("depth", sa.Integer, nullable=False, server_default="1"),
-        sa.Column("path", sa.String(500), nullable=False),
-        sa.CheckConstraint(
-            "depth >= 1 AND depth <= 3", name="chk_activity_depth"
+        sa.UniqueConstraint(
+            "name", "parent_id", name="uq_activity_name_parent"
         ),
     )
 
@@ -59,7 +56,7 @@ def upgrade() -> None:
         "organizations",
         sa.Column("id", sa.Integer, primary_key=True),
         sa.Column("name", sa.String(255), nullable=False),
-        sa.Column("phones", postgresql.ARRAY(sa.String()), nullable=True),
+        sa.Column("phones", sa.ARRAY(sa.String), nullable=True),
         sa.Column(
             "building_id",
             sa.Integer,

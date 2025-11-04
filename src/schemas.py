@@ -15,9 +15,7 @@ class ActivityRead(BaseModel):
     id: int
     name: str
     parent_id: int | None = None
-    depth: int | None = 1
-    path: str
-    children: List["ActivityRead"] = []
+    children: List["ActivityRead"] | None = []
 
     model_config = {"from_attributes": True}
 

@@ -3,27 +3,40 @@ from sqlalchemy import (
     Integer,
     String,
     ForeignKey,
-    CheckConstraint,
-    event,
+    UniqueConstraint,
+    Table,
+    select,
+    text,
 )
-from sqlalchemy.orm import relationship
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import relationship, selectinload
 from src.core.db.database import Base
 
 
 class Activity(Base):
     __tablename__ = "activities"
+    __table_args__ = (
+        UniqueConstraint("name", "parent_id", name="uq_activity_name_parent"),
+    )
 
     id = Column(Integer, primary_key=True)
-    name = Column(String(200), nullable=False)
+    name = Column(String(100), nullable=False)
+
     parent_id = Column(
         Integer,
-        ForeignKey("activities.id", ondelete="SET NULL"),
+        ForeignKey("activities.id", ondelete="CASCADE"),
         nullable=True,
     )
-    depth = Column(Integer, nullable=False, default=1)
-    path = Column(String(500), nullable=False)
-
-    parent = relationship("Activity", remote_side=[id], backref="children")
+    parent = relationship(
+        "Activity",
+        back_populates="children",
+        remote_side=[id],
+    )
+    children = relationship(
+        "Activity",
+        back_populates="parent",
+        cascade="all, delete-orphan",
+    )
 
     organizations = relationship(
         "Organization",
@@ -31,25 +44,5 @@ class Activity(Base):
         back_populates="activities",
     )
 
-    __table_args__ = (
-        CheckConstraint(
-            "depth >= 1 AND depth <= 3", name="chk_activity_depth"
-        ),
-    )
-
-
-@event.listens_for(Activity, "before_insert")
-@event.listens_for(Activity, "before_update")
-def set_depth_and_path(mapper, connection, target):
-    if target.parent_id:
-        parent = connection.execute(
-            Activity.__table__.select().where(Activity.id == target.parent_id)
-        ).first()
-        if parent:
-            target.depth = parent.depth + 1
-            if target.depth > 3:
-                raise ValueError("Activity depth cannot exceed 3")
-            target.path = f"{parent.path}.{target.id or 'new'}"
-    else:
-        target.depth = 1
-        target.path = str(target.id or "new")
+    def __repr__(self):
+        return f"Activity(id={self.id!r}, name={self.name!r}, parent_id={self.parent_id!r})"
