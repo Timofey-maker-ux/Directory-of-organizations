@@ -28,10 +28,3 @@ class Building(Base):
         ),
     )
 
-
-@event.listens_for(Building, "before_insert")
-@event.listens_for(Building, "before_update")
-def update_geom(mapper, connection, target):
-    target.geom = WKTElement(
-        f"POINT({target.longitude} {target.latitude})", srid=4326
-    )
