@@ -15,7 +15,12 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     lifespan=lifespan,
+    title="Organizations API",
+    description="API для работы с организациями, зданиями и видами деятельности",
+    version="1.0.0",
 )
+
+
 router = APIRouter(prefix="/api")
 router.include_router(organizations_router)
 app.include_router(router)

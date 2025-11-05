@@ -1,6 +1,6 @@
-from sqlalchemy import Column, Integer, String, Float, CheckConstraint, event
+from sqlalchemy import Column, Integer, String, Float, CheckConstraint
 from sqlalchemy.orm import relationship
-from geoalchemy2 import Geometry, WKTElement
+from geoalchemy2 import Geometry
 from src.core.db.database import Base
 
 

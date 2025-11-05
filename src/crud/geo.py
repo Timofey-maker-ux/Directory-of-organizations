@@ -1,5 +1,3 @@
-from typing import List
-
 from geoalchemy2.functions import (
     ST_SetSRID,
     ST_Point,
@@ -7,7 +5,7 @@ from geoalchemy2.functions import (
     ST_MakeEnvelope,
     ST_Contains,
 )
-from sqlalchemy import select, func, text
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -29,9 +27,7 @@ async def organizations_within_radius(
         .where(ST_DWithin(Building.geom, point, radius_meters))
         .options(
             selectinload(Organization.building),
-            selectinload(Organization.activities)
-            .selectinload(Activity.children)
-            .selectinload(Activity.children),
+            selectinload(Organization.activities),
         )
     )
     res = await db.execute(stmt)
@@ -51,9 +47,7 @@ async def organizations_in_bbox(
         .where(ST_Contains(bbox, Building.geom))
         .options(
             selectinload(Organization.building),
-            selectinload(Organization.activities)
-            .selectinload(Activity.children)
-            .selectinload(Activity.children),
+            selectinload(Organization.activities),
         )
     )
     res = await db.execute(stmt)

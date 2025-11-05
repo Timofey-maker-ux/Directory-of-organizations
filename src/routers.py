@@ -1,16 +1,44 @@
 from typing import List
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import (
+    APIRouter,
+    Depends,
+    HTTPException,
+    Query,
+    status,
+    Security,
+)
+from fastapi.security import APIKeyHeader
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.core.db.database import db_helper
 from src.crud import base, filters, geo
 from src.schemas import OrganizationRead
+from src.core.config import settings
 
-router = APIRouter(prefix="/organizations", tags=["organizations"])
+
+api_key_header = APIKeyHeader(name="x-api-key", auto_error=False)
+
+
+async def get_api_key(api_key: str = Security(api_key_header)):
+    if api_key != settings.API_KEY:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid API Key",
+        )
+    return api_key
+
+
+router = APIRouter(
+    prefix="/organizations",
+    tags=["organizations"],
+    dependencies=[Depends(get_api_key)],
+)
 
 
 @router.get(
     "/by-building/{building_id}",
+    summary="Получить организации по зданию",
+    description="Возвращает все организации, находящиеся в указанном здании.",
     response_model=List[OrganizationRead],
 )
 async def get_by_building(
@@ -22,7 +50,12 @@ async def get_by_building(
     return orgs
 
 
-@router.get("/search/by-activity", response_model=list[OrganizationRead])
+@router.get(
+    "/search/by-activity",
+    summary="Поиск организаций по виду деятельности",
+    description="Возвращает организации, связанные с указанным видом деятельности или его подвидом.",
+    response_model=list[OrganizationRead],
+)
 async def search_by_activity_name(
     activity_name: str, db: AsyncSession = Depends(db_helper.get_session)
 ):
@@ -36,7 +69,12 @@ async def search_by_activity_name(
     return orgs
 
 
-@router.get("/geo/radius", response_model=List[OrganizationRead])
+@router.get(
+    "/geo/radius",
+    summary="Поиск организаций в радиусе",
+    description="Возвращает организации, находящиеся в радиусе от указанной точки (lat/lon) в метрах.",
+    response_model=List[OrganizationRead],
+)
 async def get_by_radius(
     lat: float = Query(...),
     lon: float = Query(...),
@@ -49,7 +87,12 @@ async def get_by_radius(
     return orgs
 
 
-@router.get("/geo/bbox", response_model=List[OrganizationRead])
+@router.get(
+    "/geo/bbox",
+    summary="Поиск организаций по bounding box",
+    description="Возвращает организации, находящиеся внутри заданного прямоугольника.",
+    response_model=List[OrganizationRead],
+)
 async def get_by_bbox(
     lat1: float = Query(...),
     lon1: float = Query(...),
@@ -63,7 +106,12 @@ async def get_by_bbox(
     return orgs
 
 
-@router.get("/{org_id}", response_model=OrganizationRead)
+@router.get(
+    "/{org_id}",
+    summary="Получить организацию по ID",
+    description="Возвращает организацию с её building и верхним уровнем активностей.",
+    response_model=OrganizationRead,
+)
 async def get_org(
     org_id: int, db: AsyncSession = Depends(db_helper.get_session)
 ):
@@ -73,7 +121,12 @@ async def get_org(
     return org
 
 
-@router.get("/search/by-name", response_model=List[OrganizationRead])
+@router.get(
+    "/search/by-name",
+    summary="Поиск организаций по названию",
+    description="Возвращает список организаций, чьи названия соответствуют поисковому запросу.",
+    response_model=List[OrganizationRead],
+)
 async def search_by_name(
     query: str = Query(..., min_length=2),
     db: AsyncSession = Depends(db_helper.get_session),

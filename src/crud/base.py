@@ -1,7 +1,6 @@
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
-from src.models.activity import Activity
 from src.models.organization import Organization
 
 
@@ -16,11 +15,9 @@ async def get_organization(
         select(Organization)
         .options(
             selectinload(Organization.building),
-            selectinload(Organization.activities)
-            .selectinload(Activity.children)
-            .selectinload(Activity.children)
-            .selectinload(Activity.children),
+            selectinload(Organization.activities),
         )
         .where(Organization.id == org_id)
     )
-    return res.scalars().first()
+    org = res.scalars().first()
+    return org

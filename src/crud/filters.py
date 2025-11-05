@@ -9,13 +9,12 @@ from src.models.activity import Activity
 async def list_by_building(
     db: AsyncSession, building_id: int
 ) -> list[Organization]:
+    """Возвращает список организаций, расположенных в заданном здании."""
     res = await db.execute(
         select(Organization)
         .options(
             selectinload(Organization.building),
-            selectinload(Organization.activities)
-            .selectinload(Activity.children)
-            .selectinload(Activity.children),
+            selectinload(Organization.activities),
         )
         .where(Organization.building_id == building_id)
     )
@@ -36,7 +35,7 @@ async def get_activity_ids_by_name(db: AsyncSession, name: str) -> list[int]:
 async def get_organizations_by_activity_ids(
     db: AsyncSession, activity_ids: list[int]
 ) -> list[Organization]:
-    """Возвращает организации, связанные с верхними уровнями активности."""
+    """Возвращает организации, связанные с заданным списком идентификаторов активностей."""
     if not activity_ids:
         return []
 
@@ -50,7 +49,6 @@ async def get_organizations_by_activity_ids(
             .selectinload(Activity.children)
             .selectinload(Activity.children),
         )
-        .distinct()
     )
     return res.scalars().all()
 
@@ -58,15 +56,13 @@ async def get_organizations_by_activity_ids(
 async def search_organizations_by_name(
     db: AsyncSession, query: str
 ) -> list[Organization]:
+    """Выполняет поиск организаций по названию (частичное совпадение, без учёта регистра)."""
     res = await db.execute(
         select(Organization)
         .where(Organization.name.ilike(f"%{query}%"))
         .options(
             selectinload(Organization.building),
-            selectinload(Organization.activities)
-            .selectinload(Activity.children)
-            .selectinload(Activity.children)
-            .selectinload(Activity.children),
+            selectinload(Organization.activities),
         )
     )
     return res.scalars().all()

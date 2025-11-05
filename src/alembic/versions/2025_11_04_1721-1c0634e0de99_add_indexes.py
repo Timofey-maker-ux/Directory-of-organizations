@@ -20,16 +20,12 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
-    # Индекс для быстрого поиска по имени активности (name + parent_id уже уникальны)
     op.create_index("ix_activities_name", "activities", ["name"])
 
-    # Индекс для быстрого поиска по parent_id
     op.create_index("ix_activities_parent_id", "activities", ["parent_id"])
 
-    # Индекс на имя организаций для поиска по названию
     op.create_index("ix_organizations_name", "organizations", ["name"])
 
-    # Индекс на связи организация-активность
     op.create_index(
         "ix_org_activities_activity_id",
         "organization_activities",

@@ -4,12 +4,8 @@ from sqlalchemy import (
     String,
     ForeignKey,
     UniqueConstraint,
-    Table,
-    select,
-    text,
 )
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import relationship, selectinload
+from sqlalchemy.orm import relationship
 from src.core.db.database import Base
 
 
@@ -43,6 +39,3 @@ class Activity(Base):
         secondary="organization_activities",
         back_populates="activities",
     )
-
-    def __repr__(self):
-        return f"Activity(id={self.id!r}, name={self.name!r}, parent_id={self.parent_id!r})"

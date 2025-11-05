@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import List, Optional
+from typing import List
 
 
 class BuildingRead(BaseModel):
@@ -15,16 +15,15 @@ class ActivityRead(BaseModel):
     id: int
     name: str
     parent_id: int | None = None
-    children: List["ActivityRead"] | None = []
 
     model_config = {"from_attributes": True}
 
 
 class OrganizationRead(BaseModel):
     name: str
-    phones: Optional[List[str]] = []
+    phones: List[str] | None = None
     id: int
     building: BuildingRead
-    activities: List[ActivityRead] = []
+    activities: List[ActivityRead] | None = None
 
     model_config = {"from_attributes": True}

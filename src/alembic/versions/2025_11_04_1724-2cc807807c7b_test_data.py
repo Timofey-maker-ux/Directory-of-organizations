@@ -22,7 +22,6 @@ depends_on: Union[str, Sequence[str], None] = None
 def upgrade() -> None:
     connection = op.get_bind()
 
-    # ----------------- Активности -----------------
     connection.execute(
         sa.text(
             """
@@ -39,7 +38,6 @@ def upgrade() -> None:
         )
     )
 
-    # ----------------- Здания -----------------
     connection.execute(
         sa.text(
             """
@@ -51,7 +49,6 @@ def upgrade() -> None:
         )
     )
 
-    # ----------------- Организации -----------------
     connection.execute(
         sa.text(
             """
@@ -64,7 +61,6 @@ def upgrade() -> None:
         )
     )
 
-    # ----------------- Связи организация-активности -----------------
     connection.execute(
         sa.text(
             """
